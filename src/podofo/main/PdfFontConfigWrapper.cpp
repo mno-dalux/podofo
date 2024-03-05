@@ -119,6 +119,7 @@ void PdfFontConfigWrapper::createDefaultConfig()
 <fontconfig>
     <dir>WINDOWSFONTDIR</dir>
     <dir>WINDOWSUSERFONTDIR</dir>
+    <dir>CUSTOMFONTDIR</dir>
     <dir prefix="xdg">fonts</dir>
     <cachedir>LOCAL_APPDATA_FONTCONFIG_CACHE</cachedir>
     <cachedir prefix="xdg">fontconfig</cachedir>

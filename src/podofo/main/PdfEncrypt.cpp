@@ -27,6 +27,8 @@
 #include <openssl/opensslconf.h>
 #include <openssl/md5.h>
 #include <openssl/evp.h>
+#define NOMINMAX
+#include <windows.h>
 
 using namespace std;
 using namespace PoDoFo;
@@ -58,6 +60,14 @@ public:
         m_libCtx = OSSL_LIB_CTX_new();
         if (m_libCtx == nullptr)
             PODOFO_RAISE_ERROR_INFO(PdfErrorCode::InvalidHandle, "Unable to create OpenSSL library context");
+
+        TCHAR buffer[MAX_PATH];
+        if (GetModuleFileName(NULL, buffer, MAX_PATH)) {
+            std::string path = buffer;
+            size_t pos = path.find_last_of("\\");
+            path = path.substr(0, pos);
+            OSSL_PROVIDER_set_default_search_path(m_libCtx, path.c_str());
+        }
 
         // NOTE: Load required legacy providers, such as RC4, together regular ones,
         // as explained in https://wiki.openssl.org/index.php/OpenSSL_3.0#Providers
