@@ -8,6 +8,8 @@
 #include "PdfFontConfigWrapper.h"
 
 #include <fontconfig/fontconfig.h>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace PoDoFo;
@@ -113,18 +115,26 @@ FcConfig* PdfFontConfigWrapper::GetFcConfig()
 void PdfFontConfigWrapper::createDefaultConfig()
 {
 #ifdef _WIN32
-    const char* fontconf =
-        R"(<?xml version="1.0"?>
+    const char* fontconf;
+    std::ifstream file("fonts.conf");
+    if (file.good()) {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        fontconf = buffer.str().c_str();
+        file.close();
+    } else {
+        fontconf =
+            R"(<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
     <dir>WINDOWSFONTDIR</dir>
     <dir>WINDOWSUSERFONTDIR</dir>
-    <dir>CUSTOMFONTDIR</dir>
     <dir prefix="xdg">fonts</dir>
     <cachedir>LOCAL_APPDATA_FONTCONFIG_CACHE</cachedir>
     <cachedir prefix="xdg">fontconfig</cachedir>
 </fontconfig>
 )";
+    }
 #elif __ANDROID__
     // On android fonts are located in /system/fonts
     const char* fontconf =
