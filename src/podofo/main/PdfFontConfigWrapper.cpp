@@ -11,6 +11,9 @@
 #include <fstream>
 #include <sstream>
 
+#define NOMINMAX
+#include <windows.h>
+
 using namespace std;
 using namespace PoDoFo;
 
@@ -115,14 +118,22 @@ FcConfig* PdfFontConfigWrapper::GetFcConfig()
 void PdfFontConfigWrapper::createDefaultConfig()
 {
 #ifdef _WIN32
+    TCHAR buffer[MAX_PATH];
+    std::string path = "";
+    if (GetModuleFileName(NULL, buffer, MAX_PATH)) {
+        path = buffer;
+        size_t pos = path.find_last_of("\\");
+        path = path.substr(0, pos + 1);
+    }
     const char* fontconf;
-    std::ifstream file("fonts.conf");
+    std::ifstream file(path + "fonts.conf");
     if (file.good()) {
         std::stringstream buffer;
         buffer << file.rdbuf();
         fontconf = buffer.str().c_str();
         file.close();
     } else {
+        std::cout << "FAILED :(";
         fontconf =
             R"(<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
