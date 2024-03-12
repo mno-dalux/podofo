@@ -115,25 +115,35 @@ FcConfig* PdfFontConfigWrapper::GetFcConfig()
     return m_FcConfig;
 }
 
+#define BUFFERSIZE 4000
+
 void PdfFontConfigWrapper::createDefaultConfig()
 {
 #ifdef _WIN32
+    // Get path of executable
     TCHAR buffer[MAX_PATH];
+    std::string bufferString;
     std::string path = "";
     if (GetModuleFileName(NULL, buffer, MAX_PATH)) {
-        path = buffer;
-        size_t pos = path.find_last_of("\\");
-        path = path.substr(0, pos + 1);
+        bufferString = buffer;
+        size_t pos = bufferString.find_last_of("\\");
+        path = bufferString.substr(0, pos + 1);
     }
+
+    // Open config file
+    path = path + "fonts.conf";
     const char* fontconf;
-    std::ifstream file(path + "fonts.conf");
-    if (file.good()) {
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        fontconf = buffer.str().c_str();
-        file.close();
+    HANDLE hFile = ::CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+
+    // Read config file
+    CHAR confBuffer[BUFFERSIZE];
+    std::string confBufferString;
+    if (hFile != INVALID_HANDLE_VALUE) {
+        ReadFile(hFile, confBuffer, BUFFERSIZE - 1, NULL, NULL);
+        confBufferString = confBuffer;
+        fontconf = confBufferString.c_str();
+        CloseHandle(hFile);
     } else {
-        std::cout << "FAILED :(";
         fontconf =
             R"(<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
